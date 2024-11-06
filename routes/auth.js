@@ -439,7 +439,7 @@ router.post('/register', async function(req, res, next) {
                     id: user.uplineId
                 }
             })
-            if (referralUser) {
+            if (referralUser && referralUser.isAmbassador) {
                 await sendNewReferredUserEmail(
                     referralUser,
                     user.id, 1,

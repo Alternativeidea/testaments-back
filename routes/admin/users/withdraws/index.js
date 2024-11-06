@@ -3,6 +3,7 @@ import { makeATeaPot } from '../../../../utils/httpErrors.js'
 import vine from '@vinejs/vine'
 import { filterSchema } from '../../../../schemas/withdrawSchema.js'
 import { Withdraw } from '../../../../models/withdraw.js'
+import { User } from '../../../../models/user.js'
 const router = express.Router({
     mergeParams: true
 })
@@ -17,7 +18,7 @@ router.get('/', async function(req, res, next) {
             data: req.query
         })
         const where = {
-            userId: req.user.id,
+            userId: req.params.id,
             status: [
                 Withdraw.STATUS.ACTIVE,
                 Withdraw.STATUS.DONE,
@@ -29,7 +30,13 @@ router.get('/', async function(req, res, next) {
         }
         const withdraws = await Withdraw.findAll({
             where,
-            order: output.orderBy
+            order: output.orderBy,
+            include: [
+                {
+                    model: User,
+                    as: 'user'
+                }
+            ]
         })
         return res.send(withdraws)
     } catch (error) {

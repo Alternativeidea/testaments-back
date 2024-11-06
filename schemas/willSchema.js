@@ -1,5 +1,5 @@
 import vine from '@vinejs/vine'
-import { myRule, transformEncodedIntegerArray } from './validation.js'
+import { myRule, transformEncodedIntegerArray, transformEncodedStringArray } from './validation.js'
 
 export const createSchema = vine.object({
     description: vine.string(),
@@ -36,5 +36,8 @@ export const filterSchema = vine.object({
     limit: vine.number().min(-1).parse(v => v ?? 50),
     search: vine.string().optional().nullable(),
     status: vine.string().use(myRule()).transform((value) => transformEncodedIntegerArray(value)).optional(),
-    categories: vine.string().use(myRule()).transform((value) => transformEncodedIntegerArray(value)).optional()
+    categories: vine.string().use(myRule()).transform((value) => transformEncodedIntegerArray(value)).optional(),
+    orderBy: vine.string().transform((value) => transformEncodedStringArray(value)).optional(),
+    startAt: vine.date().optional().nullable(),
+    endAt: vine.date().optional().nullable()
 })

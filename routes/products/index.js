@@ -61,7 +61,8 @@ router.get('/', async function (req, res, next) {
     // This one is just dangerous
     let orders = await Order.scope('list').findAll({
         where: {
-            userId: req.user.id
+            userId: req.user.id,
+            status: Order.STATUS.PENDING
         },
         include: [
             {

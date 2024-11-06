@@ -93,7 +93,17 @@ export const updateSchema = vine.object({
     tin: vine.string().optional(),
     career: vine.string().optional(),
     emso: vine.string().optional(),
-    countryId: vine.number().optional()
+    countryId: vine.number().optional(),
+    birthdate: vine.date({
+        formats: {
+            utc: true,
+            format: 'YYYY-MM-DDTHH:mm:ssZ'
+        }
+    })
+        .transform((value) =>
+            Date.parse(value.toISOString(), { zone: 'utc' })
+        )
+        .optional()
 })
 
 export const patchSchema = vine.object({

@@ -129,7 +129,8 @@ router.get('/data/memberships', async function (req, res, next) {
         }
     }
 
-    const user = await User.findByPk(req.user.id)
+    const user = await User.findByPk(req.params.id)
+
     let filtered = []
     try {
         // This one consults the TST transactions

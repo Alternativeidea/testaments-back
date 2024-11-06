@@ -28,11 +28,16 @@ router.get('/', async function(req, res, next) {
         if (output.status) {
             where.status = output.status
         }
+        // if (output.startAt && output.endAt) {
+        //     where.date = {
+        //         [Op.between]: [output.startAt, output.endAt]
+        //     }
+        // }
         const wills = await Request.findAll({
             where,
             limit: output.limit >= 0 ? output.limit : 50,
             offset: output.offset,
-            order: [['id', 'DESC']],
+            order: output.orderBy || [['id', 'DESC']],
             include: [
                 {
                     model: Will,

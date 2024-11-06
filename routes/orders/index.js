@@ -44,7 +44,8 @@ router.post('/', async function (req, res, next) {
     try {
         const check = await Order.findAll({
             where: {
-                userId: req.user.id
+                userId: req.user.id,
+                status: Order.STATUS.PENDING
             },
             include: [
                 {

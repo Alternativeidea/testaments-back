@@ -17,6 +17,7 @@ import { json2csv } from 'json-2-csv'
 import disk from '../../../config/drive.js'
 import { format } from '@formkit/tempo'
 import { sendStatusEmail } from '../../../utils/mails/auth.js'
+import { Country } from '../../../models/country.js'
 
 const router = express.Router()
 
@@ -121,7 +122,7 @@ router.get('/', async function(req, res, next) {
                 'referralLink', 'city', 'address', 'zipcode', 'birthdate', 'balance',
                 'gender', 'isAmbassador', 'isVerified', 'membershipId', 'createdAt'
             ],
-            limit: filters.limit >= 0 ? filters.limit : 50,
+            limit: filters.limit >= 0 ? filters.limit : 100,
             offset: filters.offset,
             order: filters.orderBy,
             where
@@ -181,7 +182,7 @@ router.get('/', async function(req, res, next) {
     }
 
     const users = await User.findAll({
-        limit: filters.limit >= 0 ? filters.limit : 50,
+        limit: filters.limit >= 0 ? filters.limit : 100,
         offset: filters.offset,
         order: filters.orderBy,
         where
@@ -192,7 +193,14 @@ router.get('/', async function(req, res, next) {
 
 router.get('/:id', async function(req, res, next) {
     const id = req.params.id
-    const user = await User.findByPk(id)
+    const user = await User.findByPk(id, {
+        include: [
+            {
+                model: Country,
+                as: 'country'
+            }
+        ]
+    })
 
     if (!user) {
         return next(
@@ -211,15 +219,14 @@ router.put('/:id', async function(req, res, next) {
             schema: updateSchema,
             data: req.body
         })
-        // return res.send(output)
     } catch (error) {
+        console.log(error)
         if (error instanceof errors.E_VALIDATION_ERROR) {
             return next(
                 makeValidationError(error)
             )
         }
     }
-
     const connection = await getConnection()
     const transaction = await connection.transaction()
 

@@ -5,23 +5,24 @@ import { Membership } from '../../models/membership.js'
 import Stripe from 'stripe'
 import { addYear, format } from '@formkit/tempo'
 import { issuePremiumInvoice } from '../../services/minimax.js'
+import { sendPremiumNotice } from '../../utils/mails/transactions.js'
 
 // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const router = express.Router()
 
 // Test Minimax connection by faking issuing an invoice
-router.get('/', async (req, res) => {
-    try {
-        const testUserId = 272
-        const issuedInvoice = await issuePremiumInvoice(testUserId)
-        console.log('Issued Invoice:', issuedInvoice)
-        res.send(issuedInvoice)
-    } catch (error) {
-        console.error('Failed Minimax:', error.message)
-        res.status(500).send(error.message)
-    }
-})
+// router.get('/', async (req, res) => {
+//     try {
+//         const testUserId = 272
+//         const issuedInvoice = await issuePremiumInvoice(testUserId)
+//         console.log('Issued Invoice:', issuedInvoice)
+//         res.send(issuedInvoice)
+//     } catch (error) {
+//         console.error('Failed Minimax:', error.message)
+//         res.status(500).send(error.message)
+//     }
+// })
 
 const handlePaymentIntentSucceeded = async (paymentIntent) => {
     // Get the customer id from the payment intent
@@ -54,6 +55,12 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
     await user.save()
 
     // Issue an invoice in Minimax
+    if (process.env.ENVIRONMENT === 'DEV') {
+        console.log('Skipping Minimax invoice issuance in DEV environment.')
+        await sendPremiumNotice(user)
+        return true
+    }
+
     try {
         const issuedInvoice = await issuePremiumInvoice(user.id)
         if (issuedInvoice) {

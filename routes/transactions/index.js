@@ -8,7 +8,7 @@ import { getConnection } from '../../config/database.js'
 import { Rate } from '../../models/rates.js'
 import { filterSchema } from '../../schemas/transactionSchema.js'
 import { General } from '../../models/general.js'
-import { addHour } from '@formkit/tempo'
+import { addDay, addHour, format } from '@formkit/tempo'
 import { User } from '../../models/user.js'
 import { Op } from 'sequelize'
 
@@ -47,14 +47,22 @@ router.get('/', async function (req, res, next) {
             }
             return item
         })
-        // where: {
-        //     userId: req.user.id,
+        const where = {}
 
-        // },
+        if (output.startAt && output.endAt) {
+            where.createdAt = {
+                [Op.and]: {
+                    [Op.gte]: format(output.startAt, 'YYYY-MM-DD'),
+                    [Op.lte]: format(addDay(output.endAt, 1), 'YYYY-MM-DD')
+                }
+            }
+        }
+
         const transactions = await Transaction.findAll({
-            limit: output.limit >= 0 ? output.limit : 50,
+            limit: output.limit >= 0 ? output.limit : 100,
             offset: output.offset,
             where: {
+                ...where,
                 [Op.or]: [{ userId: req.user.id }, { toUserId: req.user.id }],
                 status: {
                     [Op.not]: [Transaction.STATUS.SYSTEM_RETURNED, Transaction.STATUS.DECLINED]
